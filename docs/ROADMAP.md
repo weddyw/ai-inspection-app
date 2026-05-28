@@ -2,7 +2,20 @@
 
 **Positioning:** AI inspector assistant — document inspections faster. **Not** a replacement for licensed inspectors or a full CMMS.
 
-**Moat:** Structured reports (Issue · Severity · Recommendation · Photo ref) + templates + PDFs customers actually use.
+**Strategy:** [STRATEGY.md](./STRATEGY.md) — why apartment turnover first, risks, monetization, what wins.
+
+**Moat:** Workflow + reports — not “advanced AI.” Structured findings + fast mobile upload + PDF customers share.
+
+---
+
+## Build first (MVP bar for revenue)
+
+1. Upload inspection photos  
+2. AI generates findings (human review)  
+3. Generate PDF report  
+4. Save inspection history (Supabase — in progress)
+
+Everything else is V2+.
 
 ---
 
@@ -72,15 +85,17 @@ See **[ARCHITECTURE.md](./ARCHITECTURE.md)** for full detail.
 
 ---
 
-## Monetization (ideas)
+## Monetization
 
 | Tier | Price | Includes |
 |------|-------|----------|
-| Free | $0 | Limited inspections / month |
-| Pro | ~$29/mo | Unlimited reports, PDF branding |
-| Team | ~$79/mo | Multi-user, shared assets, QR history |
+| Free / trial | $0 | Limited inspections (demo) |
+| Basic | ~$29/mo | Core workflow + PDF export |
+| Pro | ~$99/mo | Volume, branding, teams, saved history |
+| Pay per report | $5–20/report | Low-volume users |
+| **Hybrid** (later) | Sub + per-report overage | Likely best long-term |
 
-Align with FieldFlow portfolio pricing when billing ships.
+Sell **speed and documentation** — not certification or legal guarantees.
 
 ---
 

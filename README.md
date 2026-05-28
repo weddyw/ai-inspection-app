@@ -53,5 +53,6 @@ Push to GitHub → import on [Vercel](https://vercel.com) → set `OPENAI_API_KE
 
 ## Docs
 
+- **[docs/STRATEGY.md](docs/STRATEGY.md)** — market, risks, apartment turnover MVP, monetization, what wins
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — stack, OpenAI flow, PDF options, security
 - **[docs/ROADMAP.md](docs/ROADMAP.md)** — V2 features and do-not-build list

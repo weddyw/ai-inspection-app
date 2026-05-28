@@ -14,9 +14,9 @@ export default function Home() {
             Turn field photos into inspection reports
           </h1>
           <p className="mt-5 text-lg leading-7 text-slate-600">
-            Upload photos from your phone. AI vision flags debris, water damage, rust, drywall
-            damage, and more — then outputs a structured report with severity, recommendations, and
-            photo references. Export a PDF your customers will actually use.
+            Upload photos from your phone. AI vision flags stains, trash, wall damage, broken
+            fixtures, and more — then outputs a structured report with severity, recommendations, and
+            photo references. Built for fast turnover workflows; export a PDF your team can share.
           </p>
           <Link
             href="/inspect"
@@ -65,7 +65,14 @@ export default function Home() {
                 key={t.id}
                 className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
               >
-                <p className="font-semibold text-slate-900">{t.label}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-semibold text-slate-900">{t.label}</p>
+                  {t.recommended ? (
+                    <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-800">
+                      Recommended start
+                    </span>
+                  ) : null}
+                </div>
                 <p className="mt-1 text-sm text-slate-600">{t.description}</p>
                 <p className="mt-3 text-xs text-slate-500">
                   e.g. {t.visionTargets.slice(0, 3).join(" · ")}

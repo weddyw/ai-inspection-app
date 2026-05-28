@@ -25,7 +25,14 @@ export default function InspectionTemplatePicker({ value, onChange }: Props) {
                 : "border-slate-200 hover:bg-slate-50"
             }`}
           >
-            <p className="font-medium text-slate-900">{t.label}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="font-medium text-slate-900">{t.label}</p>
+              {t.recommended ? (
+                <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-800">
+                  Recommended start
+                </span>
+              ) : null}
+            </div>
             <p className="mt-1 text-xs text-slate-600">{t.description}</p>
           </button>
         ))}

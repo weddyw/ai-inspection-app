@@ -4,6 +4,8 @@ export type InspectionTemplate = {
   id: InspectionNiche;
   label: string;
   description: string;
+  /** Recommended first niche for GTM (apartment turnover) */
+  recommended?: boolean;
   /** What AI vision should look for — shown to user + sent in prompt */
   visionTargets: string[];
   categories: string[];
@@ -13,6 +15,7 @@ export const inspectionTemplates: InspectionTemplate[] = [
   {
     id: "apartment_turnover",
     label: "Apartment turnover",
+    recommended: true,
     description: "Move-out / make-ready inspection for units between tenants.",
     visionTargets: [
       "Debris and trash left behind",

@@ -1,5 +1,5 @@
 export const INSPECTION_DISCLAIMER_SHORT =
-  "AI-assisted draft only. A qualified person must verify all findings on site before legal, billing, or turnover decisions.";
+  "AI-assisted inspection only — not a licensed or compliance inspection. A qualified person must verify all findings on site before legal, billing, turnover, safety, or structural decisions. No guarantee of completeness or accuracy.";
 
 export const DRAFT_REVIEW_NOTE =
-  "Image analysis may miss or mislabel issues. Always walk the unit and confirm before issuing final reports.";
+  "AI may miss real problems or flag harmless conditions. Human review is required before final reports — especially for safety, structural, or compliance use.";
