@@ -40,3 +40,7 @@ Push to GitHub → import on [Vercel](https://vercel.com) → set `OPENAI_API_KE
 ## Stack
 
 Next.js 16 · TypeScript · Tailwind · OpenAI vision · pdf-lib
+
+## Roadmap
+
+See **[docs/ROADMAP.md](docs/ROADMAP.md)** for V2 (video, voice notes, before/after, QR tags, schedules, teams) and what **not** to build (CMMS, bidding, accounting, dispatch, custom CV training).
