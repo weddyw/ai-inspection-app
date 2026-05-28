@@ -101,13 +101,13 @@ export async function buildInspectionPdf(
   if (report.niche === "apartment_turnover") {
     section("TURNOVER STATUS", [`Ready: ${report.turnoverReady.toUpperCase()}`]);
   }
-  section(
-    "ISSUES",
-    report.issues.map(
+  section("STRUCTURED FINDINGS", [
+    "Issue | Severity | Recommendation | Photo ref",
+    ...report.issues.map(
       (i, n) =>
-        `${n + 1}. [${i.severity.toUpperCase()}] ${i.category} @ ${i.location}: ${i.description} → ${i.recommendedAction}`
-    )
-  );
+        `${n + 1}. ${i.issue} | ${i.severity.toUpperCase()} | ${i.recommendation} | Photo ${i.photoRef}`
+    ),
+  ]);
   section("RECOMMENDED ACTIONS", report.recommendedActions.map((a) => `• ${a}`));
 
   for (const pn of report.photoNotes) {

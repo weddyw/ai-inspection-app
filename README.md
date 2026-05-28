@@ -4,12 +4,22 @@ Upload 5–20 photos → select inspection type → AI analysis → PDF report w
 
 **Positioning:** AI inspector assistant — not a replacement for licensed human inspectors.
 
-## V1 workflow
+## V1 must-haves
 
-1. **Upload photos** (5–20)
-2. **Inspection type** — apartment turnover, equipment, roof, or vehicle
-3. **AI analysis** — issues, severity, recommendations
-4. **Report** — PDF + printable issue list with photo notes
+| Feature | Status |
+|---------|--------|
+| **Photo upload** | Mobile camera, gallery, drag & drop (5–20 photos) |
+| **AI vision** | Debris, water damage, rust, drywall, dumpsters, ceiling tiles, etc. |
+| **Structured report** | Issue · Severity · Recommendation · Photo reference |
+| **PDF export** | Timestamped PDF with findings + embedded photos |
+| **Templates** | Apartment, equipment, roof, vehicle |
+
+## Workflow
+
+1. Upload photos (5–20)
+2. Select inspection template
+3. AI vision analysis
+4. Review structured table → download PDF
 
 ## Local dev
 

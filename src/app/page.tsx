@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
+import { inspectionTemplates } from "@/lib/niches";
 
 export default function Home() {
   return (
@@ -10,12 +11,12 @@ export default function Home() {
             AI inspector assistant
           </p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-            Turn photos into inspection reports in minutes
+            Turn field photos into inspection reports
           </h1>
           <p className="mt-5 text-lg leading-7 text-slate-600">
-            Upload 5–20 photos. Pick the inspection type. Get detected issues, severity ratings,
-            and recommended actions — then download a timestamped PDF. Built to help document
-            inspections, not replace qualified inspectors.
+            Upload photos from your phone. AI vision flags debris, water damage, rust, drywall
+            damage, and more — then outputs a structured report with severity, recommendations, and
+            photo references. Export a PDF your customers will actually use.
           </p>
           <Link
             href="/inspect"
@@ -27,20 +28,26 @@ export default function Home() {
 
         <div className="mt-16">
           <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">
-            How it works
+            Must-have workflow
           </h2>
           <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { n: "1", t: "Upload photos", d: "5–20 images from phone or camera" },
-              { n: "2", t: "Select type", d: "Apartment, equipment, roof, or vehicle" },
-              { n: "3", t: "AI analysis", d: "Issues, severity, and recommendations" },
-              { n: "4", t: "PDF report", d: "Issue list, photo notes, timestamps" },
-            ].map((s) => (
+              {
+                t: "Photo upload",
+                d: "Mobile camera, gallery, drag & drop — 5–20 photos",
+              },
+              { t: "AI vision", d: "Detects issues with severity and photo reference" },
+              {
+                t: "Structured report",
+                d: "Issue · Severity · Recommendation · Photo #",
+              },
+              { t: "PDF export", d: "Timestamped report with findings and images" },
+            ].map((s, i) => (
               <li
-                key={s.n}
+                key={s.t}
                 className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
               >
-                <span className="text-xs font-bold text-indigo-600">Step {s.n}</span>
+                <span className="text-xs font-bold text-indigo-600">Step {i + 1}</span>
                 <p className="mt-2 font-semibold text-slate-900">{s.t}</p>
                 <p className="mt-1 text-sm text-slate-600">{s.d}</p>
               </li>
@@ -50,20 +57,19 @@ export default function Home() {
 
         <div className="mt-16">
           <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">
-            Inspection types (V1)
+            Inspection templates
           </h2>
-          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-            {[
-              "Apartment turnover",
-              "Equipment inspection",
-              "Roof inspection",
-              "Vehicle inspection",
-            ].map((label) => (
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+            {inspectionTemplates.map((t) => (
               <li
-                key={label}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800"
+                key={t.id}
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
               >
-                {label}
+                <p className="font-semibold text-slate-900">{t.label}</p>
+                <p className="mt-1 text-sm text-slate-600">{t.description}</p>
+                <p className="mt-3 text-xs text-slate-500">
+                  e.g. {t.visionTargets.slice(0, 3).join(" · ")}
+                </p>
               </li>
             ))}
           </ul>

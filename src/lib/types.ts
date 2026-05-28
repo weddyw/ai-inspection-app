@@ -17,12 +17,16 @@ export type InspectionInput = {
 
 export type InspectionIssue = {
   id: string;
-  category: string;
+  /** Primary finding label (e.g. "Cracked drywall", "Rust on frame") */
+  issue: string;
   severity: Severity;
+  /** What to do next */
+  recommendation: string;
+  /** 1-based photo number for report (Photo 1, Photo 2, …) */
+  photoRef: number;
+  /** Optional context: room, area, or equipment part */
   location: string;
-  description: string;
-  recommendedAction: string;
-  photoIndex?: number;
+  category: string;
 };
 
 export type PhotoNote = {

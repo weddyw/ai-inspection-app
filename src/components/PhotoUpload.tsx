@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { UploadedPhoto } from "@/lib/types";
 
 const MIN = 5;
@@ -28,7 +28,9 @@ function readFile(file: File): Promise<UploadedPhoto> {
 }
 
 export default function PhotoUpload({ photos, onChange }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   async function addFiles(fileList: FileList | null) {
     if (!fileList) return;
@@ -46,64 +48,98 @@ export default function PhotoUpload({ photos, onChange }: Props) {
     onChange(photos.filter((p) => p.id !== id));
   }
 
-  const countOk = photos.length >= MIN && photos.length <= MAX;
+  const countOk = photos.length >= MIN;
 
   return (
-    <div>
+    <div className="space-y-4">
       <div
-        role="button"
-        tabIndex={0}
-        onDragOver={(e) => e.preventDefault()}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
         onDrop={(e) => {
           e.preventDefault();
+          setIsDragging(false);
           void addFiles(e.dataTransfer.files);
         }}
-        onClick={() => inputRef.current?.click()}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
-        }}
-        className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-4 py-12 text-center hover:border-indigo-300 hover:bg-indigo-50/50"
+        className={`rounded-xl border-2 border-dashed px-4 py-8 text-center transition sm:py-10 ${
+          isDragging
+            ? "border-indigo-500 bg-indigo-50"
+            : "border-slate-200 bg-slate-50"
+        }`}
       >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(e) => {
-            void addFiles(e.target.files);
-            e.target.value = "";
-          }}
-        />
-        <p className="text-sm font-medium text-slate-800">Drop photos here or click to browse</p>
-        <p className="mt-1 text-xs text-slate-500">
-          {MIN}–{MAX} photos required · JPG or PNG
-        </p>
+        <p className="text-sm font-medium text-slate-800">Drag and drop photos here</p>
+        <p className="mt-1 text-xs text-slate-500">{MIN}–{MAX} photos · JPG or PNG</p>
       </div>
 
-      <p
-        className={`mt-3 text-sm ${countOk ? "text-emerald-700" : "text-slate-600"}`}
-      >
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <button
+          type="button"
+          onClick={() => cameraRef.current?.click()}
+          className="flex min-h-[48px] items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-800 active:bg-indigo-100"
+        >
+          Take photos
+        </button>
+        <button
+          type="button"
+          onClick={() => galleryRef.current?.click()}
+          className="flex min-h-[48px] items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 active:bg-slate-50"
+        >
+          Choose from library
+        </button>
+      </div>
+
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          void addFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          void addFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
+
+      <p className={`text-sm ${countOk ? "font-medium text-emerald-700" : "text-slate-600"}`}>
         {photos.length} / {MAX} photos
-        {photos.length < MIN ? ` — add ${MIN - photos.length} more` : ""}
+        {photos.length < MIN ? ` — add at least ${MIN - photos.length} more` : " — ready to continue"}
       </p>
 
       {photos.length > 0 ? (
-        <ul className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
           {photos.map((p, i) => (
-            <li key={p.id} className="relative overflow-hidden rounded-lg border border-slate-200">
+            <li
+              key={p.id}
+              className="relative overflow-hidden rounded-lg border border-slate-200 bg-white"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.dataUrl} alt="" className="aspect-square w-full object-cover" />
-              <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 text-[10px] font-medium text-white">
+              <img
+                src={p.dataUrl}
+                alt={`Inspection photo ${i + 1}`}
+                className="aspect-square w-full object-cover"
+              />
+              <span className="absolute left-1 top-1 rounded bg-indigo-600 px-2 py-0.5 text-[11px] font-bold text-white">
                 {i + 1}
               </span>
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  remove(p.id);
-                }}
-                className="absolute right-1 top-1 rounded bg-white/90 px-1 text-xs text-red-700"
+                onClick={() => remove(p.id)}
+                className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-red-600 shadow"
+                aria-label={`Remove photo ${i + 1}`}
               >
                 ×
               </button>

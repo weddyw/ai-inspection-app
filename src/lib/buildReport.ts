@@ -18,6 +18,16 @@ export type AnalysisDraft = {
   photoNotes: Omit<PhotoNote, "fileName">[];
 };
 
+function formatStructuredIssues(issues: InspectionIssue[]): string[] {
+  const header = "Issue | Severity | Recommendation | Photo ref";
+  const sep = "—".repeat(60);
+  const rows = issues.map(
+    (i, n) =>
+      `${n + 1}. ${i.issue} | ${i.severity.toUpperCase()} | ${i.recommendation} | Photo ${i.photoRef}${i.location ? ` (${i.location})` : ""}`
+  );
+  return [header, sep, ...rows];
+}
+
 export function buildReportFromAnalysis(
   draft: AnalysisDraft,
   input: InspectionInput,
@@ -38,41 +48,7 @@ export function buildReportFromAnalysis(
 
   const title = `${nicheLabel[input.niche]} — ${input.propertyLabel || "Inspection"}`;
 
-  const printableSummary = [
-    title,
-    `Report ID: ${id}`,
-    `Generated: ${new Date(generatedAt).toLocaleString()}`,
-    input.inspectorName ? `Inspector: ${input.inspectorName}` : "",
-    "",
-    "SUMMARY",
-    draft.summary,
-    "",
-    "OVERALL ASSESSMENT",
-    draft.overallAssessment,
-    input.niche === "apartment_turnover"
-      ? `Turnover ready: ${draft.turnoverReady.toUpperCase()}`
-      : "",
-    "",
-    "ISSUES",
-    ...issues.map(
-      (i, n) =>
-        `${n + 1}. [${i.severity.toUpperCase()}] ${i.category} — ${i.location}\n   ${i.description}\n   Action: ${i.recommendedAction}`
-    ),
-    "",
-    "RECOMMENDED ACTIONS",
-    ...draft.recommendedActions.map((a) => `• ${a}`),
-    "",
-    "PHOTO NOTES",
-    ...photoNotes.map(
-      (p) => `Photo ${p.photoIndex + 1} (${p.fileName}): ${p.note}`
-    ),
-    "",
-    INSPECTION_DISCLAIMER_SHORT,
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  return {
+  const report: InspectionReport = {
     id,
     title,
     generatedAt,
@@ -85,12 +61,15 @@ export function buildReportFromAnalysis(
     issues,
     recommendedActions: draft.recommendedActions,
     photoNotes,
-    printableSummary,
+    printableSummary: "",
   };
+
+  report.printableSummary = rebuildPrintableSummary(report);
+  return report;
 }
 
 export function rebuildPrintableSummary(report: InspectionReport): string {
-  const lines = [
+  return [
     report.title,
     `Report ID: ${report.id}`,
     `Generated: ${new Date(report.generatedAt).toLocaleString()}`,
@@ -105,13 +84,10 @@ export function rebuildPrintableSummary(report: InspectionReport): string {
       ? `Turnover ready: ${report.turnoverReady.toUpperCase()}`
       : "",
     "",
-    "ISSUES",
-    ...report.issues.map(
-      (i, n) =>
-        `${n + 1}. [${i.severity.toUpperCase()}] ${i.category} — ${i.location}\n   ${i.description}\n   Action: ${i.recommendedAction}`
-    ),
+    "STRUCTURED FINDINGS",
+    ...formatStructuredIssues(report.issues),
     "",
-    "RECOMMENDED ACTIONS",
+    "PRIORITY ACTIONS",
     ...report.recommendedActions.map((a) => `• ${a}`),
     "",
     "PHOTO NOTES",
@@ -120,8 +96,9 @@ export function rebuildPrintableSummary(report: InspectionReport): string {
     ),
     "",
     INSPECTION_DISCLAIMER_SHORT,
-  ].filter(Boolean);
-  return lines.join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 export function applyReportEdits(

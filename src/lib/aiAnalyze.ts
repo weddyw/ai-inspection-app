@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import type { AnalysisDraft } from "./buildReport";
-import { getNiche } from "./niches";
+import { getTemplate } from "./niches";
 import type { InspectionNiche, Severity, TurnoverReady } from "./types";
 
 const MAX_IMAGES = 20;
@@ -28,31 +28,22 @@ export async function analyzeInspectionPhotos(
     throw new Error("OPENAI_API_KEY is not configured on the server.");
   }
 
-  const template = getNiche(niche);
+  const template = getTemplate(niche);
   const limited = images.slice(0, MAX_IMAGES);
-
   const client = new OpenAI({ apiKey });
 
-  const nicheGuidance: Record<InspectionNiche, string> = {
-    apartment_turnover:
-      "Focus on move-out condition: wall damage, trash, stains, broken fixtures, flooring, cleanliness. Set turnoverReady to yes/no/conditional.",
-    equipment_inspection:
-      "Focus on industrial equipment visible condition: wear, leaks, missing guards, housekeeping. Set turnoverReady to n/a.",
-    roof_inspection:
-      "Focus on roof exterior: shingles, flashing, gutters, penetrations. Note if photos are insufficient for structural conclusions. Set turnoverReady to n/a.",
-    vehicle_inspection:
-      "Focus on vehicle body, tires, lights, glass, interior, visible leaks. Set turnoverReady to n/a.",
-  };
+  const visionList = (template?.visionTargets ?? []).map((v) => `- ${v}`).join("\n");
 
-  const prompt = `You are an AI inspection assistant. You help document visual findings — you do NOT replace licensed inspectors.
+  const prompt = `You are an AI vision inspection assistant. Document ONLY what is visible in photos. You do NOT replace licensed inspectors.
 
-Inspection type: ${template?.label ?? niche}
+INSPECTION TEMPLATE: ${template?.label ?? niche}
 Property / asset: ${context.propertyLabel || "Not specified"}
 Notes: ${context.unitNotes || "None"}
 
-${nicheGuidance[niche]}
+Look specifically for issues like:
+${visionList}
 
-Analyze ALL ${limited.length} photos together. Reference photo index (0-based) when an issue is clearly from one image.
+Analyze all ${limited.length} photos together. For each issue, set photoRef to the 1-based photo number (1 = first photo, 2 = second, etc.) where the issue is clearest.
 
 Return ONLY valid JSON:
 {
@@ -61,25 +52,26 @@ Return ONLY valid JSON:
   "turnoverReady": "yes" | "no" | "conditional" | "n/a",
   "issues": [
     {
-      "category": "string from typical categories",
+      "issue": "short issue title e.g. Cracked drywall, Water stain, Rust on guard",
       "severity": "low" | "medium" | "high" | "critical",
-      "location": "room/area or equipment part",
-      "description": "what you see",
-      "recommendedAction": "specific next step",
-      "photoIndex": 0
+      "recommendation": "specific action for maintenance or turnover",
+      "photoRef": 1,
+      "location": "room or area optional",
+      "category": "category from template"
     }
   ],
-  "recommendedActions": ["priority actions"],
+  "recommendedActions": ["top priority follow-ups"],
   "photoNotes": [
-    { "photoIndex": 0, "note": "brief caption of what this photo documents" }
+    { "photoIndex": 0, "note": "what this photo documents" }
   ]
 }
 
 Rules:
-- Only report what is visible; do not invent hidden defects.
-- Be conservative on severity.
-- Include 3-12 issues if visible; empty array only if unit appears pristine.
-- photoNotes: one entry per photo index provided (0 to ${limited.length - 1}).`;
+- Use plain maintenance language (debris, water damage, rust, cracked drywall, overflowing dumpster, missing ceiling tile, etc. when visible).
+- photoRef must be between 1 and ${limited.length}.
+- Do not invent issues not visible in photos.
+- 3-15 issues if problems visible; empty only if condition is clearly acceptable.
+- photoNotes: one per photo index 0 to ${limited.length - 1}.`;
 
   const content: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [
     { type: "text", text: prompt },
@@ -105,16 +97,23 @@ Rules:
   const issuesRaw = Array.isArray(parsed.issues) ? parsed.issues : [];
   const issues = issuesRaw.slice(0, 20).map((item) => {
     const o = item as Record<string, unknown>;
+    let photoRef = Number(o.photoRef ?? o.photoIndex);
+    if (!Number.isFinite(photoRef) || photoRef < 1) photoRef = 1;
+    photoRef = Math.min(Math.max(1, Math.round(photoRef)), limited.length);
+
+    const issueText = String(
+      o.issue ?? o.description ?? o.category ?? "Visible defect"
+    ).slice(0, 200);
+
     return {
-      category: String(o.category ?? "General").slice(0, 80),
+      issue: issueText,
       severity: asSeverity(o.severity),
-      location: String(o.location ?? "See photo").slice(0, 120),
-      description: String(o.description ?? "").slice(0, 500),
-      recommendedAction: String(o.recommendedAction ?? "Verify on site").slice(0, 300),
-      photoIndex:
-        typeof o.photoIndex === "number" && o.photoIndex >= 0
-          ? Math.min(o.photoIndex, limited.length - 1)
-          : undefined,
+      recommendation: String(
+        o.recommendation ?? o.recommendedAction ?? "Verify on site and repair as needed"
+      ).slice(0, 400),
+      photoRef,
+      location: String(o.location ?? "").slice(0, 120),
+      category: String(o.category ?? "General").slice(0, 80),
     };
   });
 

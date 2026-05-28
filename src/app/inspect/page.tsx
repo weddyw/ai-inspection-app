@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import AppShell from "@/components/AppShell";
+import InspectionTemplatePicker from "@/components/InspectionTemplatePicker";
 import PhotoUpload from "@/components/PhotoUpload";
 import SafetyDisclaimer from "@/components/SafetyDisclaimer";
+import StructuredIssuesTable from "@/components/StructuredIssuesTable";
 import { applyReportEdits } from "@/lib/buildReport";
 import { buildInspectionPdf, downloadPdf } from "@/lib/pdfExport";
-import { inspectionNiches } from "@/lib/niches";
 import type {
   InspectionInput,
-  InspectionNiche,
   InspectionReport,
   UploadedPhoto,
 } from "@/lib/types";
@@ -89,17 +89,12 @@ export default function InspectPage() {
     }
   }
 
-  function patchReport(patch: Partial<InspectionReport>) {
-    if (!report) return;
-    setReport(applyReportEdits(report, patch));
-  }
-
   return (
     <AppShell>
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">New inspection</h1>
         <p className="mt-2 text-slate-600">
-          Upload photos → choose type → AI findings → PDF report with timestamps.
+          Upload photos → pick template → AI vision findings → structured PDF report.
         </p>
 
         <nav className="mt-8 flex gap-1 sm:gap-2" aria-label="Progress">
@@ -121,10 +116,11 @@ export default function InspectPage() {
 
         {step === 1 ? (
           <div className="mt-6 space-y-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
               <h2 className="text-lg font-semibold text-slate-900">Step 1 — Upload photos</h2>
               <p className="mt-1 text-sm text-slate-600">
-                Add {MIN_PHOTOS}–20 clear photos of the unit, equipment, roof, or vehicle.
+                Use your phone camera or upload {MIN_PHOTOS}–20 images. Mobile-friendly drag and
+                drop supported.
               </p>
               <div className="mt-4">
                 <PhotoUpload photos={photos} onChange={setPhotos} />
@@ -152,33 +148,24 @@ export default function InspectPage() {
 
         {step === 2 ? (
           <div className="mt-6 space-y-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">Step 2 — Inspection type</h2>
-              <p className="mt-1 text-sm text-slate-600">{photos.length} photos ready for analysis.</p>
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+              <h2 className="text-lg font-semibold text-slate-900">Step 2 — Inspection template</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                {photos.length} photos ready. Template controls what AI vision looks for.
+              </p>
 
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                {inspectionNiches.map((n) => (
-                  <button
-                    key={n.id}
-                    type="button"
-                    onClick={() => setInput((p) => ({ ...p, niche: n.id }))}
-                    className={`rounded-xl border p-4 text-left transition ${
-                      input.niche === n.id
-                        ? "border-indigo-600 bg-indigo-50 ring-1 ring-indigo-600"
-                        : "border-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <p className="font-medium text-slate-900">{n.label}</p>
-                    <p className="mt-1 text-xs text-slate-600">{n.description}</p>
-                  </button>
-                ))}
+              <div className="mt-4">
+                <InspectionTemplatePicker
+                  value={input.niche}
+                  onChange={(niche) => setInput((p) => ({ ...p, niche }))}
+                />
               </div>
 
               <label className="mt-6 grid gap-1 text-sm">
                 <span className="font-medium">Property / asset label *</span>
                 <input
                   className="h-11 rounded-xl border border-slate-200 px-3"
-                  placeholder="e.g. Unit 204, Building B — Dock 3 conveyor"
+                  placeholder="e.g. Unit 204, Building B — Roof section A"
                   value={input.propertyLabel}
                   onChange={(e) => setInput((p) => ({ ...p, propertyLabel: e.target.value }))}
                 />
@@ -187,7 +174,7 @@ export default function InspectPage() {
                 <span className="font-medium">Notes (optional)</span>
                 <textarea
                   className="min-h-[80px] rounded-xl border border-slate-200 px-3 py-2"
-                  placeholder="Move-out date, known issues, areas not photographed…"
+                  placeholder="Known issues, areas not photographed…"
                   value={input.unitNotes}
                   onChange={(e) => setInput((p) => ({ ...p, unitNotes: e.target.value }))}
                 />
@@ -215,7 +202,7 @@ export default function InspectPage() {
                   onClick={goAnalyze}
                   className="flex-1 rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
                 >
-                  Run AI analysis →
+                  Run AI vision analysis →
                 </button>
               </div>
             </div>
@@ -224,9 +211,12 @@ export default function InspectPage() {
 
         {step === 3 ? (
           <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">Step 3 — AI analysis</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Step 3 — AI vision analysis</h2>
             {loading ? (
-              <p className="mt-4 text-slate-600">Analyzing {photos.length} photos…</p>
+              <p className="mt-4 text-slate-600">
+                Analyzing {photos.length} photos for debris, damage, rust, and other visible
+                issues…
+              </p>
             ) : error ? (
               <>
                 <p className="mt-4 text-sm text-red-700">{error}</p>
@@ -246,7 +236,7 @@ export default function InspectPage() {
           <div className="mt-6 space-y-6">
             <SafetyDisclaimer variant="export" />
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
               <h2 className="text-lg font-semibold text-slate-900">Step 4 — Inspection report</h2>
               <p className="mt-1 text-xs text-slate-500">
                 {report.id} · {new Date(report.generatedAt).toLocaleString()}
@@ -266,24 +256,14 @@ export default function InspectPage() {
               </div>
 
               <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Issues ({report.issues.length})
+                Structured findings ({report.issues.length})
               </h3>
-              <ul className="mt-2 space-y-3">
-                {report.issues.map((issue, i) => (
-                  <li
-                    key={issue.id}
-                    className="rounded-lg border border-slate-100 bg-slate-50 p-3 text-sm"
-                  >
-                    <p className="font-medium text-slate-900">
-                      {i + 1}. [{issue.severity.toUpperCase()}] {issue.category} — {issue.location}
-                    </p>
-                    <p className="mt-1 text-slate-600">{issue.description}</p>
-                    <p className="mt-1 text-slate-500">→ {issue.recommendedAction}</p>
-                  </li>
-                ))}
-              </ul>
+              <StructuredIssuesTable
+                issues={report.issues}
+                onChange={(issues) => setReport(applyReportEdits(report, { issues }))}
+              />
 
-              <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-slate-500">
+              <h3 className="mt-8 text-sm font-semibold uppercase tracking-wide text-slate-500">
                 Photos with notes
               </h3>
               <ul className="mt-2 grid gap-3 sm:grid-cols-2">
@@ -293,7 +273,7 @@ export default function InspectPage() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={photos[pn.photoIndex].dataUrl}
-                        alt=""
+                        alt={`Photo ${pn.photoIndex + 1}`}
                         className="aspect-video w-full rounded object-cover"
                       />
                     ) : null}
@@ -304,12 +284,10 @@ export default function InspectPage() {
                       className="mt-1 w-full rounded border border-slate-200 px-2 py-1 text-xs"
                       value={pn.note}
                       onChange={(e) => {
-                        const nextNotes = report.photoNotes.map((x) =>
-                          x.photoIndex === pn.photoIndex
-                            ? { ...x, note: e.target.value }
-                            : x
+                        const photoNotes = report.photoNotes.map((x) =>
+                          x.photoIndex === pn.photoIndex ? { ...x, note: e.target.value } : x
                         );
-                        setReport(applyReportEdits(report, { photoNotes: nextNotes }));
+                        setReport(applyReportEdits(report, { photoNotes }));
                       }}
                     />
                   </li>
@@ -321,7 +299,7 @@ export default function InspectPage() {
                   type="button"
                   disabled={pdfLoading}
                   onClick={() => void handlePdf()}
-                  className="rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
+                  className="rounded-xl bg-indigo-600 py-3.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
                 >
                   {pdfLoading ? "Building PDF…" : "Download PDF report"}
                 </button>
