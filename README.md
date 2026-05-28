@@ -39,8 +39,19 @@ Push to GitHub → import on [Vercel](https://vercel.com) → set `OPENAI_API_KE
 
 ## Stack
 
-Next.js 16 · TypeScript · Tailwind · OpenAI vision · pdf-lib
+| Layer | Tech |
+|-------|------|
+| Frontend | Next.js · TypeScript · Tailwind |
+| AI | OpenAI API (vision + structured JSON prompts) |
+| PDF (V1) | pdf-lib — client export |
+| PDF (V2+) | React PDF or Puppeteer → Supabase storage |
+| Database | Supabase — auth, storage, inspections, findings, reports |
+| Hosting | Vercel |
+| Payments (V2) | Stripe |
 
-## Roadmap
+**Database:** run [`supabase/schema.sql`](supabase/schema.sql) — `profiles`, `inspections`, `photos`, `findings`, `reports`.
 
-See **[docs/ROADMAP.md](docs/ROADMAP.md)** for V2 (video, voice notes, before/after, QR tags, schedules, teams) and what **not** to build (CMMS, bidding, accounting, dispatch, custom CV training).
+## Docs
+
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — stack, OpenAI flow, PDF options, security
+- **[docs/ROADMAP.md](docs/ROADMAP.md)** — V2 features and do-not-build list

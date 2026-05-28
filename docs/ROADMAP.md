@@ -57,15 +57,17 @@ Stay focused: **photos (and later video) → structured findings → PDF**.
 
 ---
 
-## Tech stack (planned growth)
+## Tech stack
+
+See **[ARCHITECTURE.md](./ARCHITECTURE.md)** for full detail.
 
 | Layer | V1 | V2+ |
 |-------|-----|-----|
-| Frontend | Next.js, Tailwind | Same |
-| AI | OpenAI vision | + video frames, Whisper for voice |
-| PDF | pdf-lib | Same |
-| DB / auth | — | Supabase |
-| Payments | — | Stripe (teams tier) |
+| Frontend | Next.js, TypeScript, Tailwind | Same |
+| AI | OpenAI vision + structured prompts | + video frames, Whisper for voice |
+| PDF | pdf-lib (download in browser) | React PDF or Puppeteer → `reports.pdf_url` in Supabase |
+| DB / auth | — | Supabase (`supabase/schema.sql`) |
+| Payments | — | Stripe (Pro / Team) |
 | Hosting | Vercel | Vercel |
 
 ---
